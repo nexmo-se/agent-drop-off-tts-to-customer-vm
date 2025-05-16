@@ -58,7 +58,7 @@ const maxCallDuration = process.env.MAX_CALL_DURATION; // in seconds
 
 //============= Initiating outbound PSTN calls ===============
 
-//-- Manually trigger outbound PSTN call to "callee1" number then to "calle2" number --
+//-- Manually trigger outbound PSTN call to "callee1" number then to "callee2" number --
 //-- see sample request below --
 //-- sample request: https://<server-address>/call?callee1=12995550101&callee2=129995550202 --
 
