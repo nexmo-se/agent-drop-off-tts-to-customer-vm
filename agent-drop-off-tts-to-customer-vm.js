@@ -229,7 +229,6 @@ app.post('/transfer', async(req, res) => { // request button in a GUI
   const ncco = [
     {
       "action": "connect",
-      "eventType": "synchronous",
       "eventUrl": ["https://" + connectorHost + "/ws_event"],
       "from": "12995550101",    // not important
       "endpoint": [
