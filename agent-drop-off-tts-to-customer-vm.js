@@ -1,5 +1,16 @@
 'use strict'
 
+// const ttsSample = "This is a call from your preferred provider";
+// const ttsSample = "This is a call from your preferred provider. This is a reminder for your appointment on Thursday 22ns at 10 am. Thank you and good bye.";
+const ttsSample = "This is a call from your preferred provider. Your payment method will expire soon, please update your billing information online on our web site. Thank you and good bye.";
+
+const queryStringTts = ttsSample.replace(/\s/g, "_");
+console.log("TTS payload as querry pamater:", queryStringTts);
+
+// When passing TTS payload as query parameter with the WebSocket URI
+// see this article for the max length of all query parameters for an URI
+// https://community.f5.com/discussions/technicalforum/how-to-change-the-default-max-length-of-query-string-in-url/247168
+
 //-------------
 
 require('dotenv').config();
@@ -56,11 +67,24 @@ const processorServer = process.env.PROCESSOR_SERVER;
 //---- Custom settings ---
 const maxCallDuration = process.env.MAX_CALL_DURATION; // in seconds
 
-//============= Initiating outbound PSTN calls ===============
+//------------------------------------------------------------------------------------------
 
 //-- Manually trigger outbound PSTN call to "callee1" number then to "callee2" number --
 //-- see sample request below --
 //-- sample request: https://<server-address>/call?callee1=12995550101&callee2=129995550202 --
+console.log('\nManually trigger outbound PSTN call to "callee1" number then to "callee2" number\n\
+see sample request below\n\
+https://<server-address>/call?callee1=12995550101&callee2=129995550202\n');
+
+//-- Trigger connecttion of user call leg with WebSocket --
+//-- trigger from a web browser --
+//-- sample request: https://<server-address>/transfer?uuid_to_transfer=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx --
+
+console.log('\nTrigger connecttion of user call leg with WebSocket\n\
+trigger from a web browser, sample request below:\n\
+https://<server-address>/transfer?uuid_to_transfer=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx\n');
+
+//============= Initiating outbound PSTN calls ===============
 
 app.get('/call', async(req, res) => {
 
@@ -162,10 +186,6 @@ app.post('/ws_event', async(req, res) => {
 
 app.get('/transfer', async(req, res) => {  // request via a web browser
 
-  //-- Trigger connecttion of user call leg with WebSocket --
-  //-- trigger from a web browser --
-  //-- sample request: https://<server-address>/transfer?uuid_to_transfer=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx --
-
   res.status(200).send('Ok');
 
   const hostName = req.hostname;
@@ -180,7 +200,7 @@ app.get('/transfer', async(req, res) => {  // request via a web browser
     connectorHost = processorServer;
   }
 
-  const wsUri = 'wss://' + connectorHost + '/socket?peer_uuid=' + uuidToTransfer + '&webhook_url=https://' + hostName + '/results'
+  const wsUri = 'wss://' + connectorHost + '/socket?peer_uuid=' + uuidToTransfer + '&tts_text=' + queryStringTts + '&webhook_url=https://' + hostName + '/results'
 
   const ncco = [
     {
@@ -192,7 +212,11 @@ app.get('/transfer', async(req, res) => {  // request via a web browser
           "type": "websocket",
           "uri": wsUri,
           "content-type": "audio/l16;rate=16000", // never modify
-          "headers": {}
+          "headers": {
+            "ttsText": "Hello, 1, 2, 3, 4",
+            "language": "en",
+            // "voiceID": "xxxx"
+          }
         }
       ]
     }
@@ -224,7 +248,7 @@ app.post('/transfer', async(req, res) => { // request button in a GUI
     connectorHost = processorServer;
   }
 
-  const wsUri = 'wss://' + processorServer + '/socket?peer_uuid=' + uuidToTransfer + '&webhook_url=https://' + hostName + '/results'
+  const wsUri = 'wss://' + processorServer + '/socket?peer_uuid=' + uuidToTransfer + '&tts_text=' + queryStringTts + '&webhook_url=https://' + hostName + '/results'
 
   const ncco = [
     {
